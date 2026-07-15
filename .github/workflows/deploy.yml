@@ -1,0 +1,40 @@
+name: Deploy Hexo Blog
+
+on:
+  push:
+    branches:
+      - main          # 如果你的默认分支是 master，请改为 master
+  workflow_dispatch:  # 允许手动触发
+
+permissions:
+  contents: write     # 允许推送代码到 gh-pages 分支
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout 代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'   # 推荐使用 LTS 版本，可调整
+
+      - name: 安装 Hexo CLI
+        run: npm install -g hexo-cli
+
+      - name: 安装项目依赖
+        run: npm install
+
+      - name: 生成静态文件
+        run: hexo generate   # 或 npm run build（需在 package.json 中配置）
+
+      - name: 部署到 gh-pages 分支
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public        # Hexo 默认输出目录
+          publish_branch: gh-pages     # 目标分支
+          force_orphan: true           # 保持该分支纯净，每次覆盖
